@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/chroma_db:/app/chroma_db
+      - ./backend/.env:/app/.env
+    environment:
+      - PYTHONPATH=/app
+    networks:
+      - pdf-qa-network
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+    networks:
+      - pdf-qa-network
+    restart: unless-stopped
+
+networks:
+  pdf-qa-network:
+    driver: bridge
+
+volumes:
+  uploads:
+  chroma_db:
