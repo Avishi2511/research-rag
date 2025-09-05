@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Upload from './components/upload';
+import Upload from './components/Upload';
 import ChatBox from './components/Chatbox';
 import Answer from './components/Answer';
 import Home from './pages/Home';
@@ -13,7 +13,7 @@ function App() {
   const [chatHistory, setChatHistory] = useState([]);
 
   const handleUploadSuccess = (response) => {
-    setUploadedFiles(prev => [...prev, ...response.files_processed]);
+    setUploadedFiles(prev => [...prev, response.files_processed]);
   };
 
   const handleNewAnswer = (question, answer) => {

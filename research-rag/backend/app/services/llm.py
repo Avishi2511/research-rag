@@ -6,7 +6,7 @@ from ..utils.config import config
 class GeminiLLMService:
     def __init__(self):
         self.api_key = config.GEMINI_API_KEY
-        self.base_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
+        self.base_url = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent"
         
         if not self.api_key:
             raise ValueError("GEMINI_API_KEY is required")

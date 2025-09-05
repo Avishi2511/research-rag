@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { askQuestion } from '../services/api';
-import '../styles/ChatBox.css';
+import '../styles/Chatbox.css';
 
 const ChatBox = ({ onNewAnswer, isLoading, setIsLoading, hasDocuments }) => {
   const [question, setQuestion] = useState('');
