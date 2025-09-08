@@ -12,24 +12,26 @@
 }
 
 .dashboard-header h2 {
-  color: #333;
+  color: #2d3748;
   font-size: 2rem;
   margin: 0;
+  font-weight: 600;
 }
 
 .clear-data-btn {
-  background: #dc3545;
+  background: #e53e3e;
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 6px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .clear-data-btn:hover {
-  background: #c82333;
+  background: #c53030;
+  transform: translateY(-1px);
 }
 
 .loading-spinner {
@@ -43,8 +45,8 @@
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #e1e5e9;
-  border-top: 4px solid #667eea;
+  border: 4px solid #e2e8f0;
+  border-top: 4px solid #2c5282;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;
@@ -56,12 +58,13 @@
 }
 
 .error-banner {
-  background: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
+  background: #fed7d7;
+  color: #742a2a;
+  border: 1px solid #feb2b2;
   padding: 1rem;
   border-radius: 6px;
   margin-bottom: 2rem;
+  font-weight: 500;
 }
 
 .stats-grid {
@@ -72,50 +75,55 @@
 }
 
 .stat-card {
-  background: white;
+  background: #ffffff;
   padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  border: 1px solid #e2e8f0;
   text-align: center;
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .stat-card:hover {
   transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
 }
 
 .stat-number {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #667eea;
+  color: #1e3a5f;
   margin-bottom: 0.5rem;
 }
 
 .stat-label {
-  color: #666;
+  color: #718096;
   font-size: 1rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  font-weight: 500;
 }
 
 .documents-section {
-  background: white;
+  background: #ffffff;
   border-radius: 12px;
   padding: 2rem;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  border: 1px solid #e2e8f0;
   margin-bottom: 2rem;
 }
 
 .documents-section h3 {
-  color: #333;
+  color: #2d3748;
   margin-bottom: 1.5rem;
   font-size: 1.5rem;
+  font-weight: 600;
 }
 
 .empty-state {
   text-align: center;
   padding: 3rem;
-  color: #666;
+  color: #718096;
 }
 
 .empty-state p {
@@ -131,11 +139,12 @@
   grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr;
   gap: 1rem;
   padding: 1rem;
-  background: #f8f9fa;
+  background: #f7fafc;
   border-radius: 8px;
   margin-bottom: 0.5rem;
   font-weight: 600;
-  color: #333;
+  color: #2d3748;
+  border: 1px solid #e2e8f0;
 }
 
 .table-row {
@@ -143,12 +152,12 @@
   grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr;
   gap: 1rem;
   padding: 1rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #e2e8f0;
   transition: background 0.3s ease;
 }
 
 .table-row:hover {
-  background: #f8f9fa;
+  background: #f7fafc;
 }
 
 .table-row:last-child {
@@ -164,12 +173,12 @@
 .table-cell {
   display: flex;
   align-items: center;
-  color: #555;
+  color: #4a5568;
 }
 
 .document-name {
   font-weight: 500;
-  color: #333;
+  color: #2d3748;
 }
 
 .file-icon {
@@ -178,16 +187,18 @@
 }
 
 .system-info {
-  background: white;
+  background: #ffffff;
   border-radius: 12px;
   padding: 2rem;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  border: 1px solid #e2e8f0;
 }
 
 .system-info h3 {
-  color: #333;
+  color: #2d3748;
   margin-bottom: 1.5rem;
   font-size: 1.5rem;
+  font-weight: 600;
 }
 
 .info-grid {
@@ -201,18 +212,19 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  background: #f8f9fa;
+  background: #f7fafc;
   border-radius: 8px;
+  border: 1px solid #e2e8f0;
 }
 
 .info-label {
   font-weight: 500;
-  color: #333;
+  color: #2d3748;
 }
 
 .info-value {
-  color: #667eea;
-  font-weight: 500;
+  color: #1e3a5f;
+  font-weight: 600;
 }
 
 @media (max-width: 768px) {

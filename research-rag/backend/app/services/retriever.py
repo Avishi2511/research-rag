@@ -41,7 +41,7 @@ class HybridRetriever:
         embeddings = self.embedding_service.generate_embeddings(texts)
         self.chroma_store.add_chunks(chunks, embeddings)
     
-    def hybrid_search(self, query: str, top_k: int = 5, bm25_weight: float = 0.5, embedding_weight: float = 0.5) -> List[Dict]:
+    def hybrid_search(self, query: str, top_k: int = 5, bm25_weight: float = 0.5, embedding_weight: float = 0.5, filter_criteria: Dict = None) -> List[Dict]:
         """
         Perform hybrid search combining BM25 and embedding similarity
         
@@ -50,16 +50,17 @@ class HybridRetriever:
             top_k: Number of results to return
             bm25_weight: Weight for BM25 scores (0-1)
             embedding_weight: Weight for embedding scores (0-1)
+            filter_criteria: Optional filter criteria for search
         
         Returns:
             List of ranked results with combined scores
         """
         # Get BM25 results
-        bm25_results = self.bm25_index.search(query, top_k=top_k * 2)  # Get more to ensure diversity
+        bm25_results = self.bm25_index.search(query, top_k=top_k * 2, filter_criteria=filter_criteria)  # Get more to ensure diversity
         
         # Get embedding results
         query_embedding = self.embedding_service.generate_single_embedding(query)
-        embedding_results = self.chroma_store.search(query, top_k=top_k * 2, query_embedding=query_embedding)
+        embedding_results = self.chroma_store.search(query, top_k=top_k * 2, query_embedding=query_embedding, filter_criteria=filter_criteria)
         
         # Combine and score results
         combined_results = self._combine_results(bm25_results, embedding_results, bm25_weight, embedding_weight)

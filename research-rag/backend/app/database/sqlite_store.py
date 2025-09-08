@@ -9,11 +9,19 @@ class SQLiteStore:
         self.init_database()
     
     def init_database(self):
-        """Initialize SQLite database with required tables"""
+        """Initialize SQLite database with required tables and apply migrations"""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         
-        # Documents table
+        # Create schema version table first
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS schema_version (
+                version INTEGER PRIMARY KEY,
+                applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
+        # Documents table (initial version without session_id)
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS documents (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -40,17 +48,55 @@ class SQLiteStore:
         ''')
         
         conn.commit()
+        
+        # Apply migrations
+        self._apply_migrations(conn, cursor)
+        
         conn.close()
     
-    def add_document(self, filename: str, total_pages: int, total_chunks: int, file_size: int) -> int:
+    def _get_current_schema_version(self, cursor) -> int:
+        """Get the current schema version"""
+        try:
+            cursor.execute("SELECT MAX(version) FROM schema_version")
+            result = cursor.fetchone()
+            return result[0] if result[0] is not None else 0
+        except sqlite3.OperationalError:
+            # schema_version table doesn't exist, this is version 0
+            return 0
+    
+    def _apply_migrations(self, conn, cursor):
+        """Apply database migrations"""
+        current_version = self._get_current_schema_version(cursor)
+        
+        # Migration 1: Add session_id column to documents table
+        if current_version < 1:
+            self._migration_001_add_session_id(cursor)
+            cursor.execute("INSERT INTO schema_version (version) VALUES (1)")
+            print("Applied migration 001: Added session_id column")
+        
+        conn.commit()
+    
+    def _migration_001_add_session_id(self, cursor):
+        """Migration 001: Add session_id column to documents table"""
+        # Check if session_id column already exists
+        cursor.execute("PRAGMA table_info(documents)")
+        columns = [column[1] for column in cursor.fetchall()]
+        
+        if 'session_id' not in columns:
+            cursor.execute("ALTER TABLE documents ADD COLUMN session_id TEXT")
+            print("Added session_id column to documents table")
+        else:
+            print("session_id column already exists")
+    
+    def add_document(self, filename: str, total_pages: int, total_chunks: int, file_size: int, session_id: str = None) -> int:
         """Add document metadata and return document ID"""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         
         cursor.execute('''
-            INSERT INTO documents (filename, total_pages, total_chunks, file_size)
-            VALUES (?, ?, ?, ?)
-        ''', (filename, total_pages, total_chunks, file_size))
+            INSERT INTO documents (filename, total_pages, total_chunks, file_size, session_id)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (filename, total_pages, total_chunks, file_size, session_id))
         
         document_id = cursor.lastrowid
         conn.commit()
@@ -94,7 +140,31 @@ class SQLiteStore:
                 "upload_date": row[2],
                 "total_pages": row[3],
                 "total_chunks": row[4],
-                "file_size": row[5]
+                "file_size": row[5],
+                "session_id": row[6]
+            })
+        
+        conn.close()
+        return documents
+    
+    def get_documents_by_session(self, session_id: str) -> List[Dict]:
+        """Get documents by session ID"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        cursor.execute('SELECT * FROM documents WHERE session_id = ? ORDER BY upload_date DESC', (session_id,))
+        rows = cursor.fetchall()
+        
+        documents = []
+        for row in rows:
+            documents.append({
+                "id": row[0],
+                "filename": row[1],
+                "upload_date": row[2],
+                "total_pages": row[3],
+                "total_chunks": row[4],
+                "file_size": row[5],
+                "session_id": row[6]
             })
         
         conn.close()

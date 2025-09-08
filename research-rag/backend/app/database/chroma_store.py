@@ -61,7 +61,8 @@ class ChromaStore:
                 "source_file": str(chunk["metadata"]["source_file"]),
                 "page_number": str(chunk["metadata"]["page_number"]),
                 "chunk_id": str(chunk["metadata"]["chunk_id"]),
-                "tokens": str(chunk.get("tokens", 0))
+                "tokens": str(chunk.get("tokens", 0)),
+                "session_id": str(chunk.get("session_id", ""))
             }
             metadatas.append(metadata)
         
@@ -82,25 +83,30 @@ class ChromaStore:
                 ids=ids
             )
     
-    def search(self, query: str, top_k: int = 5, query_embedding: Optional[np.ndarray] = None) -> List[Tuple[Dict, float]]:
-        """Search for similar chunks"""
+    def search(self, query: str, top_k: int = 5, query_embedding: Optional[np.ndarray] = None, filter_criteria: Dict = None) -> List[Tuple[Dict, float]]:
+        """Search for similar chunks with optional filtering"""
         if not self.collection:
             return []
         
         try:
+            # Build where clause from filter criteria
+            where_clause = self._build_where_clause(filter_criteria)
+            
             if query_embedding is not None:
                 # Use provided embedding for search
                 results = self.collection.query(
                     query_embeddings=[query_embedding.tolist()],
                     n_results=top_k,
-                    include=["documents", "metadatas", "distances"]
+                    include=["documents", "metadatas", "distances"],
+                    where=where_clause
                 )
             else:
                 # Use text query (Chroma will generate embedding)
                 results = self.collection.query(
                     query_texts=[query],
                     n_results=top_k,
-                    include=["documents", "metadatas", "distances"]
+                    include=["documents", "metadatas", "distances"],
+                    where=where_clause
                 )
             
             # Format results
@@ -124,6 +130,32 @@ class ChromaStore:
         except Exception as e:
             print(f"Error searching Chroma: {str(e)}")
             return []
+    
+    def _build_where_clause(self, filter_criteria: Dict) -> Optional[Dict]:
+        """Build Chroma where clause from filter criteria"""
+        if not filter_criteria:
+            return None
+        
+        where_conditions = []
+        
+        for key, value in filter_criteria.items():
+            if key == "session_id":
+                where_conditions.append({"session_id": {"$eq": str(value)}})
+            elif key == "source":
+                if isinstance(value, dict) and "$in" in value:
+                    # Handle $in operator for multiple sources
+                    where_conditions.append({"source_file": {"$in": [str(v) for v in value["$in"]]}})
+                else:
+                    where_conditions.append({"source_file": {"$eq": str(value)}})
+            else:
+                where_conditions.append({key: {"$eq": str(value)}})
+        
+        if len(where_conditions) == 1:
+            return where_conditions[0]
+        elif len(where_conditions) > 1:
+            return {"$and": where_conditions}
+        
+        return None
     
     def get_collection_count(self) -> int:
         """Get number of documents in collection"""

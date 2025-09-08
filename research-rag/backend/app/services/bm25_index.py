@@ -58,8 +58,8 @@ class BM25Index:
         
         return True
     
-    def search(self, query: str, top_k: int = 5) -> List[Tuple[Dict, float]]:
-        """Search using BM25"""
+    def search(self, query: str, top_k: int = 5, filter_criteria: Dict = None) -> List[Tuple[Dict, float]]:
+        """Search using BM25 with optional filtering"""
         if not self.bm25:
             return []
         
@@ -69,21 +69,58 @@ class BM25Index:
         # Get scores
         scores = self.bm25.get_scores(query_tokens)
         
-        # Get top results
-        top_indices = scores.argsort()[-top_k:][::-1]
+        # Apply filtering if criteria provided
+        valid_indices = []
+        for idx, metadata in enumerate(self.chunk_metadata):
+            if self._matches_filter(metadata, filter_criteria):
+                valid_indices.append(idx)
+        
+        # Filter scores to only include valid indices
+        if filter_criteria and valid_indices:
+            filtered_scores = [(idx, scores[idx]) for idx in valid_indices if scores[idx] > 0]
+            filtered_scores.sort(key=lambda x: x[1], reverse=True)
+            top_results = filtered_scores[:top_k]
+        else:
+            # Get top results from all indices
+            top_indices = scores.argsort()[-top_k:][::-1]
+            top_results = [(idx, scores[idx]) for idx in top_indices if scores[idx] > 0]
         
         results = []
-        for idx in top_indices:
-            if scores[idx] > 0:  # Only return results with positive scores
-                chunk_text = " ".join(self.corpus[idx])
-                result = {
-                    "text": chunk_text,
-                    "metadata": self.chunk_metadata[idx],
-                    "score": float(scores[idx])
-                }
-                results.append((result, scores[idx]))
+        for idx, score in top_results:
+            chunk_text = " ".join(self.corpus[idx])
+            result = {
+                "text": chunk_text,
+                "metadata": self.chunk_metadata[idx],
+                "score": float(score)
+            }
+            results.append((result, score))
         
         return results
+    
+    def _matches_filter(self, metadata: Dict, filter_criteria: Dict) -> bool:
+        """Check if metadata matches filter criteria"""
+        if not filter_criteria:
+            return True
+        
+        for key, value in filter_criteria.items():
+            if key == "session_id":
+                # Check if chunk has session_id in metadata or as a direct field
+                chunk_session_id = metadata.get("session_id")
+                if chunk_session_id != value:
+                    return False
+            elif key == "source":
+                if isinstance(value, dict) and "$in" in value:
+                    # Handle $in operator for multiple sources
+                    if metadata.get("source") not in value["$in"]:
+                        return False
+                else:
+                    if metadata.get("source") != value:
+                        return False
+            else:
+                if metadata.get(key) != value:
+                    return False
+        
+        return True
     
     def add_chunks(self, new_chunks: List[Dict]):
         """Add new chunks to existing index"""
@@ -91,7 +128,13 @@ class BM25Index:
         for chunk in new_chunks:
             tokens = chunk["text"].lower().split()
             self.corpus.append(tokens)
-            self.chunk_metadata.append(chunk["metadata"])
+            
+            # Include session_id in metadata if present
+            metadata = chunk["metadata"].copy()
+            if "session_id" in chunk:
+                metadata["session_id"] = chunk["session_id"]
+            
+            self.chunk_metadata.append(metadata)
         
         # Rebuild index
         self.bm25 = BM25Okapi(self.corpus)

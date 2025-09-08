@@ -11,9 +11,16 @@ function App() {
   const [currentAnswer, setCurrentAnswer] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
+  const [currentSession, setCurrentSession] = useState(null);
 
   const handleUploadSuccess = (response) => {
     setUploadedFiles(prev => [...prev, response.files_processed]);
+    // Store the session information from the upload
+    setCurrentSession({
+      session_id: response.session_id,
+      uploaded_files: response.uploaded_files,
+      upload_time: new Date().toISOString()
+    });
   };
 
   const handleNewAnswer = (question, answer) => {
@@ -64,6 +71,7 @@ function App() {
                 isLoading={isLoading}
                 setIsLoading={setIsLoading}
                 hasDocuments={uploadedFiles.length > 0}
+                currentSession={currentSession}
               />
               
               {currentAnswer && (
