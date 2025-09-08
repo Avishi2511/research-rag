@@ -45,6 +45,10 @@ An advanced retrieval-augmented generation (RAG) system that enables users to up
 3. **Source Attribution**: Automatic citation with document names, page numbers, and relevance scores
 4. **Response Formatting**: Structured output with answer, sources, and metadata
 
+<br>
+   <img width="500" height="500" alt="image" src="https://github.com/user-attachments/assets/de660578-3664-4ca3-bc1c-2530e801d589" />
+
+
 
 ## 🛠️ Technical Architecture
 
@@ -283,51 +287,6 @@ MAX_CONCURRENT_UPLOADS=5
 EMBEDDING_BATCH_SIZE=32
 VECTOR_SEARCH_TIMEOUT=30
 ```
-
-## 📊 Performance & Limitations
-
-### System Requirements
-
-- **Minimum**: 4GB RAM, 2 CPU cores
-- **Recommended**: 8GB RAM, 4 CPU cores
-- **Storage**: 1GB per 1000 document pages
-- **Network**: Stable internet for LLM API calls
-
-### Performance Metrics
-
-- **Upload Processing**: ~2-5 seconds per MB
-- **Query Response**: ~1-3 seconds average
-- **Concurrent Users**: Up to 50 (with proper scaling)
-- **Document Limit**: 10,000 documents per instance
-
-### Known Limitations
-
-- **File Types**: Currently supports PDF only
-- **Language**: Optimized for English text
-- **Context Window**: Limited by LLM token limits
-- **Real-time**: Not suitable for real-time collaborative editing
-
-## 🚀 Deployment & Scaling
-
-### Production Deployment
-
-```bash
-# Using Docker Compose for production
-docker-compose -f docker-compose.prod.yml up -d
-
-# Environment variables for production
-ENVIRONMENT=production
-LOG_LEVEL=INFO
-MAX_UPLOAD_SIZE=100MB
-RATE_LIMIT_REQUESTS=100
-```
-
-### Scaling Considerations
-
-- **Horizontal Scaling**: Multiple backend instances with load balancer
-- **Database Scaling**: Separate ChromaDB and SQLite instances
-- **Caching**: Redis for query result caching
-- **CDN**: Static asset delivery optimization
 
 
 ### Development Setup
